@@ -20,6 +20,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	void MoveForward(float value);
+	void MoveRight(float value);
+	class UCameraComponent* CameraComp;
+	class USpringArmComponent* SpringArmComp;
 
 public:	
 	// Called every frame
