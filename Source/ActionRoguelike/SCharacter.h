@@ -12,8 +12,14 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 	GENERATED_BODY()
 protected:
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileClass;
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	class TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	class UAnimMontage* AttackAnim;
+
+	FTimerHandle TimerHandle_PrimaryAttack;
+
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
@@ -22,8 +28,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* CameraComp;
+
 	UPROPERTY(VisibleAnywhere)
 	class USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(VisibleAnywhere)
+	class USInteractionComponent* InteractionComp;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -34,6 +44,9 @@ protected:
 
 	void PrimaryAttack();
 
+	void PrimaryAttack_TimeElapsed();
+
+	void PrimaryInteract();
 
 public:	
 	// Called every frame
