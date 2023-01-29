@@ -2,26 +2,50 @@
 
 
 #include "SProjectileBase.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ASProjectileBase::ASProjectileBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
 
+	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SphereComp->SetCollisionProfileName("Projectile");
+	SphereComp->OnComponentHit.AddDynamic(this, &ASProjectileBase::OnActorHit);
+	RootComponent = SphereComp;
+
+	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
+	EffectComp->SetupAttachment(RootComponent);
+
+	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMoveComp");
+	MoveComp->InitialSpeed = 8000;
+	MoveComp->ProjectileGravityScale = 0.0f;
+	MoveComp->bRotationFollowsVelocity = true;
+	MoveComp->bInitialVelocityInLocalSpace = true;
 }
 
-// Called when the game starts or when spawned
-void ASProjectileBase::BeginPlay()
+void ASProjectileBase::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::BeginPlay();
+	Explode();
+}
+
+void ASProjectileBase::Explode_Implementation() 
+{
+	// check to make sure we arent already destroyed
+	// ensure = to see if we encounter this situation at all
+
+	if (ensure(!IsPendingKill())) 
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+
+		Destroy();
+	}
+}
+
+void ASProjectileBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 	
 }
-
-// Called every frame
-void ASProjectileBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

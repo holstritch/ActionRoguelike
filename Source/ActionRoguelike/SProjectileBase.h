@@ -14,26 +14,35 @@ UCLASS()
 class ACTIONROGUELIKE_API ASProjectileBase : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	ASProjectileBase();
 
 protected:
 	// Called when the game starts or when spawned
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+		UParticleSystem* ImpactVFX;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		USphereComponent* SphereComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		UProjectileMovementComponent* MovementComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		UProjectileMovementComponent* MoveComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		UParticleSystemComponent* EffectComp;
 
-	virtual void BeginPlay() override;
+	// virtual = can override in child classes
+	UFUNCTION()
+		virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	// BlueprintNativeEvent = C++ base implementation + can be expanded in BP
+	// BlueprintCallable = allow child classes to trigger
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		void Explode();
+
+	virtual void PostInitializeComponents() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+
+	ASProjectileBase();
 
 };

@@ -4,8 +4,10 @@
 #include "SCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "DrawDebugHelpers.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SInteractionComponent.h"
+//#include "SAttributeComponent.h"
 
 
 // Sets default values
@@ -23,9 +25,11 @@ ASCharacter::ASCharacter()
 
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
 
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	//AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
 }
 
 // Called when the game starts or when spawned
@@ -58,6 +62,10 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
 
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, & ASCharacter::PrimaryInteract);
+
+	PlayerInputComponent->BindAction("BlackholeAttack", IE_Pressed, this, &ASCharacter::BlackholeAttack);
+
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ASCharacter::Dash);
 }
 
 void ASCharacter::MoveForward(float value)
@@ -94,15 +102,74 @@ void ASCharacter::PrimaryAttack()
 
 void ASCharacter::PrimaryAttack_TimeElapsed()
 {
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	SpawnProjectile(ProjectileClass);
+}
 
-	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
+void ASCharacter::BlackholeAttack() 
+{
+	PlayAnimMontage(AttackAnim);
 
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = this;
+	GetWorldTimerManager().SetTimer(TimerHandle_BlackholeAttack, this, &ASCharacter::BlackholeAttack_TimeElapsed, 0.2f);
+}
 
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+void ASCharacter::BlackholeAttack_TimeElapsed() 
+{
+	SpawnProjectile(BlackholeProjectileClass);
+}
+
+void ASCharacter::Dash() 
+{
+	PlayAnimMontage(AttackAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASCharacter::Dash_TimeElapsed, 0.2f);
+}
+
+void ASCharacter::Dash_TimeElapsed() 
+{
+	SpawnProjectile(DashProjectileClass);
+}
+
+void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn) 
+{
+	if (ensureAlways(ClassToSpawn)) 
+	{
+		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Instigator = this;
+
+		FCollisionShape Shape;
+		Shape.SetSphere(20.0f);
+
+		// ignore player
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		FCollisionObjectQueryParams ObjParams;
+		ObjParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+		ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
+		ObjParams.AddObjectTypesToQuery(ECC_Pawn);
+
+		FVector TraceStart = CameraComp->GetComponentLocation();
+
+		// endpoint far into the look-at distance (not too far, adjust towards crosshair on a miss)
+		FVector TraceEnd = CameraComp->GetComponentLocation() + (GetControlRotation().Vector() * 5000);
+
+		FHitResult Hit;
+		// returns true if we got to a blocking hit
+		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjParams, Shape, Params)) 
+		{
+			// overwrite trace end with impact point in world
+			TraceEnd = Hit.ImpactPoint;
+		}
+
+		// find new direction/rotation from hand pointing to impact point in world
+		FRotator ProjRotation = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
+
+		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
+		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTM, SpawnParams);
+	}
 }
 
 void ASCharacter::PrimaryInteract()
