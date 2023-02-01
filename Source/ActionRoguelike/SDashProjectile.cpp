@@ -11,7 +11,7 @@ ASDashProjectile::ASDashProjectile()
 	TeleportDelay = 0.2f;
 	DetonateDelay = 0.2f;
 
-	MoveComp->InitialSpeed = 6000.0f;
+	MoveComp->InitialSpeed = 4000.0f;
 }
 
 void ASDashProjectile::BeginPlay() 
@@ -46,4 +46,6 @@ void ASDashProjectile::TeleportInstigator()
 		// keep instigator rotation or it may end up jarring
 		ActorToTeleport->TeleportTo(GetActorLocation(), ActorToTeleport->GetActorRotation(), false, false);
 	}
+
+	Destroy();
 }

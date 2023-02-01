@@ -20,7 +20,7 @@ ASProjectileBase::ASProjectileBase()
 	EffectComp->SetupAttachment(RootComponent);
 
 	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMoveComp");
-	MoveComp->InitialSpeed = 8000;
+	MoveComp->InitialSpeed = 1000;
 	MoveComp->ProjectileGravityScale = 0.0f;
 	MoveComp->bRotationFollowsVelocity = true;
 	MoveComp->bInitialVelocityInLocalSpace = true;
@@ -48,4 +48,6 @@ void ASProjectileBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
+	// More consistent to bind here compared to Constructor which may fail to bind if Blueprint was created before adding this binding (or when using hotreload)
+	SphereComp->OnComponentHit.AddDynamic(this, &ASProjectileBase::OnActorHit);
 }

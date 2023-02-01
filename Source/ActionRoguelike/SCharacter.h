@@ -43,8 +43,8 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	class USInteractionComponent* InteractionComp;
 
-	//UPROPERTY(VisibleAnywhere)
-	//class USAttributeComponent* AttributeComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class USAttributeComponent* AttributeComp;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
