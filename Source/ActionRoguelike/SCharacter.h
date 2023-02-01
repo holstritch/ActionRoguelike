@@ -6,6 +6,13 @@
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
 
+// forward declare
+class UCameraComponent;
+class USpringArmComponent;
+class USInteractionComponent;
+class UAnimMontage;
+class USAttributeComponent;
+
 UCLASS()
 class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 {
@@ -13,16 +20,16 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	class TSubclassOf<AActor> ProjectileClass;
+	TSubclassOf<AActor> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	class TSubclassOf<AActor> BlackholeProjectileClass;
+	TSubclassOf<AActor> BlackholeProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	class TSubclassOf<AActor> DashProjectileClass;
+	TSubclassOf<AActor> DashProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	class UAnimMontage* AttackAnim;
+	UAnimMontage* AttackAnim;
 
 	FTimerHandle TimerHandle_PrimaryAttack;
 	FTimerHandle TimerHandle_BlackholeAttack;
@@ -35,16 +42,16 @@ public:
 protected:
 
 	UPROPERTY(VisibleAnywhere)
-	class UCameraComponent* CameraComp;
+	UCameraComponent* CameraComp;
 
 	UPROPERTY(VisibleAnywhere)
-	class USpringArmComponent* SpringArmComp;
+	USpringArmComponent* SpringArmComp;
 
 	UPROPERTY(VisibleAnywhere)
-	class USInteractionComponent* InteractionComp;
+	USInteractionComponent* InteractionComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class USAttributeComponent* AttributeComp;
+	USAttributeComponent* AttributeComp;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

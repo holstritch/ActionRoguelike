@@ -13,13 +13,12 @@ ASProjectileBase::ASProjectileBase()
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
 	SphereComp->SetCollisionProfileName("Projectile");
-	SphereComp->OnComponentHit.AddDynamic(this, &ASProjectileBase::OnActorHit);
 	RootComponent = SphereComp;
 
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(RootComponent);
 
-	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMoveComp");
+	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComp");
 	MoveComp->InitialSpeed = 1000;
 	MoveComp->ProjectileGravityScale = 0.0f;
 	MoveComp->bRotationFollowsVelocity = true;
